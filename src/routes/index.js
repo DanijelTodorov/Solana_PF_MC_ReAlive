@@ -45,7 +45,7 @@ const router = async (bot) => {
     if (msg.chat.id == null || msg.chat.id == undefined)
       return;
 
-    if (userMap.get(msg.chat.id) == msg.chat.id) {
+    if (userMap.get(msg.chat.id)) {
       userMap.delete(msg.chat.id);
       console.log(`${msg.chat.id} is removed from user list`)
     } else {
