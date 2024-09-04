@@ -27,7 +27,7 @@ const userSchema = new mongoose.Schema({
   }, 
   changeRate: {
     type: Number,
-    default: 0.3
+    default: 80
   }
 });
 

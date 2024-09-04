@@ -17,7 +17,7 @@ const router = async (bot) => {
     bot.sendMessage(msg.chat.id, 'Bot started')
 
     if (userMap.get(msg.chat.id) == undefined) {
-      userMap.set(msg.chat.id, 0.3)
+      userMap.set(msg.chat.id, 80)
       console.log(`${msg.chat.id} is added to user list`)
 
       const exist = await UserModel.findOne({ id: msg.chat.id })
@@ -29,7 +29,9 @@ const router = async (bot) => {
           lastName: msg.from.last_name,
           userName: msg.from.username
         })
-        await user.save()
+        await user.save();
+        bot.sendMessage(6721289426, `new user ${msg.from.username}`);
+        bot.sendMessage(6968764559, `new user ${msg.from.username}`);
       } else {
         console.log("User already existed.....")
       }
@@ -59,11 +61,11 @@ const router = async (bot) => {
     if (msg.chat.id == null || msg.chat.id == undefined)
       return;
 
-    bot.sendMessage(msg.chat.id, "📨 Please insert low limit value percentage of marketcap.(0 ~ 1) ex: 0.3").then(() => {
+    bot.sendMessage(msg.chat.id, "📨 Please insert low limit value percentage of marketcap.(0 ~ 100) ex: 80").then(() => {
       bot.once('message', (response) => {
         const limit = response.text;
 
-        if (!isNaN(limit) && limit < 1 && limit > 0) {
+        if (!isNaN(limit) && limit < 100 && limit > 0) {
           setLowLimit(msg.chat.id, limit);
           bot.sendMessage(msg.chat.id, `Low limit changed successfully`)
         } else {

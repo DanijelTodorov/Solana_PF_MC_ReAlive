@@ -65,13 +65,22 @@ const saveAnalystData = async (jsonObject, bot) => {
         if (
           followDetect &&
           !riseDetect &&
-          Number(jsonObject.usd_market_cap) >= Number(exist.minUSDMarketCap / changeRate)
+          Number(jsonObject.usd_market_cap) >=
+            Number((exist.minUSDMarketCap * 100) / (100 - changeRate))
         ) {
-          console.log("new rise detect = ", jsonObject.mint);
-          bot.sendMessage(
-            key,
-            `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Max MC(US$): ${newMaxMC}\n Min MC(US$): ${exist.minUSDMarketCap}\n`
-          );
+          if (
+            Number(jsonObject.usd_market_cap) >=
+            Number((exist.minUSDMarketCap * 120) / (100 - changeRate))
+          )
+            bot.sendMessage(
+              key,
+              `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Current MC(US$): ${Number((exist.minUSDMarketCap * 120) / (100 - changeRate)).toFixed(2)}\n Min MC(US$): ${Number(exist.minUSDMarketCap).toFixed(2)}\n`
+            );
+          else
+            bot.sendMessage(
+              key,
+              `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Current MC(US$): ${Number(jsonObject.usd_market_cap).toFixed(2)}\n Min MC(US$): ${Number(exist.minUSDMarketCap).toFixed(2)}\n`
+            );
           riseDetect = new RiseDetect({ id: key, token: jsonObject.mint });
           await riseDetect.save();
         }
@@ -103,7 +112,8 @@ const saveAnalystData = async (jsonObject, bot) => {
 
         if (
           !followDetect &&
-          Number(exist.maxUSDMarketCap) >= Number(jsonObject.usd_market_cap / changeRate)
+          Number(exist.maxUSDMarketCap) >=
+            Number((jsonObject.usd_market_cap * 100) / (100 - changeRate))
         ) {
           console.log("new fall detect = ", jsonObject.mint);
           const newFollowDetect = new FollowDetect({
