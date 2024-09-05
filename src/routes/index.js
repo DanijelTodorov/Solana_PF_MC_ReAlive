@@ -1,4 +1,4 @@
-const { setLowLimit, setUserMap, userMap } = require('@/services/socket')
+const { setLowLimit, userMap } = require('@/services/socket')
 const userModel = require('@/models/user.model');
 const { UserModel } = require('../models/user.model');
 
@@ -9,7 +9,6 @@ const router = async (bot) => {
       userMap.set(users[i].id, users[i].changeRate)
     }
   }
-  setUserMap(userMap)
 
   bot.onText(/^\/start$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined)
@@ -39,8 +38,6 @@ const router = async (bot) => {
     } else {
       console.log(`${msg.chat.id} is already existed in user list`)
     }
-    setUserMap(userMap)
-
   });
 
   bot.onText(/^\/stop$/, async (msg) => {
@@ -53,8 +50,6 @@ const router = async (bot) => {
     } else {
       console.log(`${msg.chat.id} is not existed in user list`)
     }
-
-    setUserMap(userMap)
   });
 
   bot.onText(/^\/setlowlimit$/, async (msg) => {

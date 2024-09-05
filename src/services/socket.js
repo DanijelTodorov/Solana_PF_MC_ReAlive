@@ -23,12 +23,8 @@ const saveTradeData = async (data) => {
   await token.save();
 };
 
-const setLowLimit = async (chatId, value) => {
+const setLowLimit = (chatId, value) => {
   userMap.set(chatId, value);
-};
-
-const setUserMap = (value) => {
-  userMap = value;
 };
 
 let mints = new Map();
@@ -194,7 +190,7 @@ const initSocket = (bot) => {
 
           try {
             const jsonObject = JSON.parse(jsonObjectString);
-            saveAnalystData(jsonObject, bot);
+            await saveAnalystData(jsonObject, bot);
           } catch (error) {
             console.error("Error parsing JSON:", error);
           }
@@ -220,6 +216,5 @@ const initSocket = (bot) => {
 module.exports = {
   initSocket,
   setLowLimit,
-  setUserMap,
   userMap,
 };
