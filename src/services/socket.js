@@ -62,7 +62,8 @@ const saveAnalystData = async (jsonObject, bot) => {
           followDetect &&
           !riseDetect &&
           Number(jsonObject.usd_market_cap) >=
-            Number((exist.minUSDMarketCap * 100) / (100 - changeRate))
+            Number((exist.minUSDMarketCap * 100) / (100 - changeRate)) &&
+          Number(jsonObject.usd_market_cap) >= 10000
         ) {
           if (
             Number(jsonObject.usd_market_cap) >=
