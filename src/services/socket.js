@@ -206,10 +206,11 @@ const initSocket = (bot) => {
   });
 
   socket.on("close", function close() {
-    socket.send("40");
-    console.log("Disconnected from WebSocket server");
-    socket.send("3");
-    process.exit(1);
+    // socket.send("40");
+    // console.log("Disconnected from WebSocket server");
+    // socket.send("3");
+    // process.exit(1);
+    initSocket(bot);
   });
 };
 
