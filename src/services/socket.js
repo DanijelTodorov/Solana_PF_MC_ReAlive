@@ -46,8 +46,8 @@ const saveAnalystData = async (jsonObject, bot) => {
       console.log("userMap length = ", userMap.size);
 
       userMap.forEach(async (changeRate, key) => {
-        console.log("id = ", key);
-        console.log("changeRate = ", changeRate);
+        // console.log("id = ", key);
+        // console.log("changeRate = ", changeRate);
         const followDetect = await FollowDetect.findOne({
           id: key,
           token: jsonObject.mint,
@@ -65,21 +65,18 @@ const saveAnalystData = async (jsonObject, bot) => {
             Number((exist.minUSDMarketCap * 100) / (100 - changeRate)) &&
           Number(jsonObject.usd_market_cap) >= 10000
         ) {
+          console.log(`======> alive, key = ${key}, Current MC = ${Number(jsonObject.usd_market_cap)}, Min MC = ${exist.minUSDMarketCap}, changeRate = ${changeRate}`);
           if (
-            Number(jsonObject.usd_market_cap) >=
+            Number(jsonObject.usd_market_cap) <=
             Number((exist.minUSDMarketCap * 120) / (100 - changeRate))
-          )
-            bot.sendMessage(
-              key,
-              `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Current MC(US$): ${Number((exist.minUSDMarketCap * 120) / (100 - changeRate)).toFixed(2)}\n Min MC(US$): ${Number(exist.minUSDMarketCap).toFixed(2)}\n`
-            );
-          else
+          ) {
             bot.sendMessage(
               key,
               `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Current MC(US$): ${Number(jsonObject.usd_market_cap).toFixed(2)}\n Min MC(US$): ${Number(exist.minUSDMarketCap).toFixed(2)}\n`
             );
-          riseDetect = new RiseDetect({ id: key, token: jsonObject.mint });
-          await riseDetect.save();
+            riseDetect = new RiseDetect({ id: key, token: jsonObject.mint });
+            await riseDetect.save();
+          }
         }
       });
 
