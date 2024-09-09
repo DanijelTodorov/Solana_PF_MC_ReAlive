@@ -10,10 +10,15 @@ const stopCommand = {
 
 const setLowLimitCommand = {
   command: 'setlowlimit',
-  description: 'Stop detection of token',
+  description: 'Set low limit',
+};
+
+const getLowLimitCommand = {
+  command: 'getlowlimit',
+  description: 'Get low limit',
 };
 
 
-const commands = [startCommand, stopCommand, setLowLimitCommand];
+const commands = [startCommand, stopCommand, setLowLimitCommand, getLowLimitCommand];
 
 module.exports = commands;

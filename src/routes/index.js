@@ -57,11 +57,17 @@ const router = async (bot) => {
       return;
 
     bot.sendMessage(msg.chat.id, "📨 Please insert low limit value percentage of marketcap.(0 ~ 100) ex: 80").then(() => {
-      bot.once('message', (response) => {
+      bot.once('message', async (response) => {
         const limit = response.text;
 
         if (!isNaN(limit) && limit < 100 && limit > 0) {
           setLowLimit(msg.chat.id, limit);
+          let user = await UserModel.findOne({ id: msg.chat.id });
+          if (user) {
+            console.log("user");
+            user.changeRate = limit;
+            await user.save();
+          }
           bot.sendMessage(msg.chat.id, `Low limit changed successfully`)
         } else {
           bot.sendMessage(msg.chat.id, `Invalid limit value`)
@@ -69,6 +75,15 @@ const router = async (bot) => {
       });
     })
 
+  });
+
+  bot.onText(/^\/getlowlimit$/, async (msg) => {
+    if (msg.chat.id == null || msg.chat.id == undefined)
+      return;
+
+    let user = await UserModel.findOne({ id: msg.chat.id });
+    const lowlimit = user.changeRate;
+    bot.sendMessage(msg.chat.id, `Low limit = ${lowlimit}%`);
   });
 
   bot.on('polling_error', (e) => {
