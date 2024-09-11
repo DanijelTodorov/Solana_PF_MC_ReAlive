@@ -18,7 +18,12 @@ const getLowLimitCommand = {
   description: 'Get low limit',
 };
 
+const allowUserCommand = {
+  command: 'allowUser',
+  description: 'Allow User',
+};
 
-const commands = [startCommand, stopCommand, setLowLimitCommand, getLowLimitCommand];
+
+const commands = [startCommand, stopCommand, setLowLimitCommand, getLowLimitCommand, allowUserCommand];
 
 module.exports = commands;

@@ -2,9 +2,11 @@ const { setLowLimit, userMap } = require("@/services/socket");
 const userModel = require("@/models/user.model");
 const { UserModel } = require("../models/user.model");
 
+const admin = [6721289426, 6968764559, 2103646535];
+
 const router = async (bot) => {
   if (userMap.size == 0) {
-    const users = await UserModel.find({});
+    const users = await UserModel.find({ allowed: true });
     for (let i = 0; i < users.length; i++) {
       userMap.set(users[i].id, users[i].changeRate);
     }
@@ -28,8 +30,16 @@ const router = async (bot) => {
           userName: msg.from.username,
         });
         await user.save();
-        bot.sendMessage(6721289426, `new user ${msg.from.username}`);
-        bot.sendMessage(6968764559, `new user ${msg.from.username}`);
+        for (let i = 0; i < admin.length; i++) {
+          bot.sendMessage(
+            admin[i],
+            `New User registered - Name:${msg.from.username} Id:${msg.chat.id}. You can allow user using /allowUser command.`
+          );
+        }
+        bot.sendMessage(
+          msg.chat.id,
+          `You are registerd, but you are not allowed. Contact with @nexxuscrypto`
+        );
       } else {
         console.log("User already existed.....");
       }
@@ -75,6 +85,41 @@ const router = async (bot) => {
           }
         });
       });
+  });
+
+  bot.onText(/^\/allowUser$/, async (msg) => {
+    if (msg.chat.id == null || msg.chat.id == undefined) return;
+
+    if (admin.includes(msg.chat.id)) {
+      bot
+        .sendMessage(
+          msg.chat.id,
+          "📨 Please input user id to allow. ex: 6968764559"
+        )
+        .then(() => {
+          bot.once("message", async (response) => {
+            const id = response.text;
+
+            if (!isNaN(limit)) {
+              let user = await UserModel.findOne({ id });
+              if (user) {
+                console.log("user");
+                user.allowed = true;
+                await user.save();
+                userMap.set(user.id, user.changeRate);
+                bot.sendMessage(msg.chat.id, `Allowed successfully`);
+              } else {
+                bot.sendMessage(msg.chat.id, 'No User');
+              }
+            } else {
+              bot.sendMessage(msg.chat.id, `Invalid limit value`);
+            }
+          });
+        });
+    } else {
+      bot.sendMessage(msg.chat.id, "You have no right to allow user!");
+      return;
+    }
   });
 
   bot.onText(/^\/getlowlimit$/, async (msg) => {
