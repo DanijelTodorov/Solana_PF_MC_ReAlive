@@ -33,7 +33,7 @@ const router = async (bot) => {
         for (let i = 0; i < admin.length; i++) {
           bot.sendMessage(
             admin[i],
-            `New User registered - Name:${msg.from.username} Id:${msg.chat.id}. You can allow user using /allowUser command.`
+            `New User registered - Name:${msg.from.username} Id:${msg.chat.id}. You can allow user using /allowuser command.`
           );
         }
         bot.sendMessage(
@@ -61,33 +61,34 @@ const router = async (bot) => {
 
   bot.onText(/^\/setlowlimit$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined) return;
+    if (userMap.get(msg.chat.id)) {
+      bot
+        .sendMessage(
+          msg.chat.id,
+          "📨 Please insert low limit value percentage of marketcap.(0 ~ 100) ex: 80"
+        )
+        .then(() => {
+          bot.once("message", async (response) => {
+            const limit = response.text;
 
-    bot
-      .sendMessage(
-        msg.chat.id,
-        "📨 Please insert low limit value percentage of marketcap.(0 ~ 100) ex: 80"
-      )
-      .then(() => {
-        bot.once("message", async (response) => {
-          const limit = response.text;
-
-          if (!isNaN(limit) && limit < 100 && limit > 0) {
-            setLowLimit(msg.chat.id, limit);
-            let user = await UserModel.findOne({ id: msg.chat.id });
-            if (user) {
-              console.log("user");
-              user.changeRate = limit;
-              await user.save();
+            if (!isNaN(limit) && limit < 100 && limit > 0) {
+              setLowLimit(msg.chat.id, limit);
+              let user = await UserModel.findOne({ id: msg.chat.id });
+              if (user) {
+                console.log("user");
+                user.changeRate = limit;
+                await user.save();
+              }
+              bot.sendMessage(msg.chat.id, `Low limit changed successfully`);
+            } else {
+              bot.sendMessage(msg.chat.id, `Invalid limit value`);
             }
-            bot.sendMessage(msg.chat.id, `Low limit changed successfully`);
-          } else {
-            bot.sendMessage(msg.chat.id, `Invalid limit value`);
-          }
+          });
         });
-      });
+    }
   });
 
-  bot.onText(/^\/allowUser$/, async (msg) => {
+  bot.onText(/^\/allowuser$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined) return;
 
     if (admin.includes(msg.chat.id)) {
@@ -100,7 +101,7 @@ const router = async (bot) => {
           bot.once("message", async (response) => {
             const id = response.text;
 
-            if (!isNaN(limit)) {
+            if (!isNaN(id)) {
               let user = await UserModel.findOne({ id });
               if (user) {
                 console.log("user");
@@ -109,7 +110,7 @@ const router = async (bot) => {
                 userMap.set(user.id, user.changeRate);
                 bot.sendMessage(msg.chat.id, `Allowed successfully`);
               } else {
-                bot.sendMessage(msg.chat.id, 'No User');
+                bot.sendMessage(msg.chat.id, "No User");
               }
             } else {
               bot.sendMessage(msg.chat.id, `Invalid limit value`);
@@ -124,11 +125,12 @@ const router = async (bot) => {
 
   bot.onText(/^\/getlowlimit$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined) return;
-
-    let user = await UserModel.findOne({ id: msg.chat.id });
-    if (user) {
-      const lowlimit = user.changeRate;
-      bot.sendMessage(msg.chat.id, `Low limit = ${lowlimit}%`);
+    if (userMap.get(msg.chat.id)) {
+      let user = await UserModel.findOne({ id: msg.chat.id });
+      if (user) {
+        const lowlimit = user.changeRate;
+        bot.sendMessage(msg.chat.id, `Low limit = ${lowlimit}%`);
+      }
     }
   });
 
