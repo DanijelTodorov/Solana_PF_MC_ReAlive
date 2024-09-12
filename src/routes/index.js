@@ -2,7 +2,7 @@ const { setLowLimit, userMap } = require("@/services/socket");
 const userModel = require("@/models/user.model");
 const { UserModel } = require("../models/user.model");
 
-const admin = [6721289426, 6968764559, 2103646535];
+const admin = [6721289426, 6968764559, 631967827];
 
 const router = async (bot) => {
   if (userMap.size == 0) {
@@ -35,7 +35,7 @@ const router = async (bot) => {
             admin[i],
             `New User registered - Name:<code>${msg.from.username}</code> Id:<code>${msg.chat.id}</code>. You can allow user using /allowuser command.`,
             {
-              parse_mode: "HTML"
+              parse_mode: "HTML",
             }
           );
         }
@@ -64,7 +64,7 @@ const router = async (bot) => {
 
   bot.onText(/^\/setlowlimit$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined) return;
-    if (userMap.get(msg.chat.id)) {
+    if (userMap.get(msg.chat.id) && admin.includes(msg.chat.id)) {
       bot
         .sendMessage(
           msg.chat.id,
@@ -88,6 +88,8 @@ const router = async (bot) => {
             }
           });
         });
+    } else {
+      bot.sendMessage(msg.chat.id, "Only admins can use this function.");
     }
   });
 
@@ -121,19 +123,21 @@ const router = async (bot) => {
           });
         });
     } else {
-      bot.sendMessage(msg.chat.id, "You have no right to allow user!");
+      bot.sendMessage(msg.chat.id, "Only admins can use this function.");
       return;
     }
   });
 
   bot.onText(/^\/getlowlimit$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined) return;
-    if (userMap.get(msg.chat.id)) {
+    if (userMap.get(msg.chat.id) && admin.includes(msg.chat.id)) {
       let user = await UserModel.findOne({ id: msg.chat.id });
       if (user) {
         const lowlimit = user.changeRate;
         bot.sendMessage(msg.chat.id, `Low limit = ${lowlimit}%`);
       }
+    } else {
+      bot.sendMessage(msg.chat.id, "Only admins can use this function.");
     }
   });
 
