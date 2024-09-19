@@ -101,6 +101,9 @@ const saveAnalystData = async (jsonObject, bot) => {
           token: jsonObject.mint,
         });
 
+        changeRate = userMap.get(631967827);
+        console.log('changeRate = ', changeRate);
+        
         if (
           !followDetect &&
           Number(exist.maxUSDMarketCap) >=
