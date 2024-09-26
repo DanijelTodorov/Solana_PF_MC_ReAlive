@@ -4,7 +4,7 @@ const { UserModel } = require("../models/user.model");
 
 const admin = [6721289426, 6968764559, 631967827];
 
-const userlistindex = 0;
+let userlistindex = 0;
 
 const router = async (bot) => {
   if (userMap.size == 0) {
