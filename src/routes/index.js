@@ -160,7 +160,14 @@ const router = async (bot) => {
           bot.once("message", async (newMessage) => {
             id = newMessage.text;
             console.log("id = ", id);
-            const user = await UserModel.findById(id);
+            let user;
+            try {
+              user = await UserModel.findById(id);
+            } catch (error) {
+              console.log("error");
+              bot.sendMessage(chatId, "Invalid user Id");
+              return;
+            }
             if (user) {
               user.allowed = true;
               await user.save();
@@ -185,7 +192,13 @@ const router = async (bot) => {
           bot.once("message", async (newMessage) => {
             id = newMessage.text;
             console.log("id = ", id);
-            const user = await UserModel.findById(id);
+            let user;
+            try {
+              user = await UserModel.findById(id);
+            } catch (error) {
+              console.log("error");
+              bot.sendMessage(chatId, "Invalid user Id");
+            }
             if (user) {
               user.allowed = false;
               await user.save();
@@ -210,7 +223,13 @@ const router = async (bot) => {
           bot.once("message", async (newMessage) => {
             id = newMessage.text;
             console.log("id = ", id);
-            const allowed = await UserModel.findByIdAndDelete(id);
+            let allowed;
+            try {
+              allowed = await UserModel.findByIdAndDelete(id);
+            } catch (error) {
+              console.log("error");
+              bot.sendMessage(chatId, "Invalid user Id");
+            }
             if (allowed) {
               userMap.delete(allowed.id);
               bot.sendMessage(chatId, "user removed");
