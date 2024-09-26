@@ -128,6 +128,104 @@ const router = async (bot) => {
     }
   });
 
+  bot.onText(/^\/manageuser$/, async (msg) => {
+    if (msg.chat.id == null || msg.chat.id == undefined) return;
+
+    const chatId = msg.chat.id;
+
+    if (admin.includes(msg.chat.id)) {
+      const { title, buttons } = await getManageUi(chatId);
+      bot.sendMessage(msg.chat.id, title, {
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: buttons,
+        },
+      });
+    } else {
+      bot.sendMessage(msg.chat.id, "Only admins can use this function.");
+      return;
+    }
+  });
+
+  bot.on("callback_query", async (query) => {
+    try {
+      const chatId = query.message.chat.id;
+      const messageId = query.message.message_id;
+      const data = query.data;
+      if (admin.includes(chatId)) {
+        if (data == "allow_user") {
+          await bot.sendMessage(chatId, "Please input user Id to allow").then();
+          bot.once("message", async (newMessage) => {
+            id = newMessage.text;
+            console.log("id = ", id);
+            const user = await UserModel.findById(id);
+            if (user) {
+              user.allowed = true;
+              await user.save();
+              userMap.set(user.id, user.changeRate);
+              bot.sendMessage(chatId, "user allowed");
+              const { title, buttons } = await getManageUi(chatId);
+              // switchMenu(chatId, messageId, title, buttons);
+              bot.deleteMessage(chatId, messageId);
+              bot.sendMessage(chatId, title, {
+                parse_mode: "HTML",
+                reply_markup: {
+                  inline_keyboard: buttons,
+                },
+              });
+            }
+          });
+        } else if (data == "stop_user") {
+          await bot.sendMessage(chatId, "Please input user Id to stop");
+          bot.once("message", async (newMessage) => {
+            id = newMessage.text;
+            console.log("id = ", id);
+            const user = await UserModel.findById(id);
+            if (user) {
+              user.allowed = false;
+              await user.save();
+              userMap.delete(user.id);
+              bot.sendMessage(chatId, "user stopped");
+              const { title, buttons } = await getManageUi(chatId);
+              // switchMenu(chatId, messageId, title, buttons);
+              bot.deleteMessage(chatId, messageId);
+              bot.sendMessage(chatId, title, {
+                parse_mode: "HTML",
+                reply_markup: {
+                  inline_keyboard: buttons,
+                },
+              });
+            }
+          });
+        } else if (data == "remove_user") {
+          await bot.sendMessage(chatId, "Please input user Id to remove");
+          bot.once("message", async (newMessage) => {
+            id = newMessage.text;
+            console.log("id = ", id);
+            const allowed = await UserModel.findByIdAndDelete(id);
+            if (allowed) {
+              userMap.delete(allowed.id);
+              bot.sendMessage(chatId, "user removed");
+              const { title, buttons } = await getManageUi(chatId);
+              // switchMenu(chatId, messageId, title, buttons);
+              bot.deleteMessage(chatId, messageId);
+              bot.sendMessage(chatId, title, {
+                parse_mode: "HTML",
+                reply_markup: {
+                  inline_keyboard: buttons,
+                },
+              });
+            }
+          });
+        }
+      } else {
+        bot.sendMessage(chatId, "This function can only be used by admin");
+      }
+    } catch (error) {
+      console.log("callback_query = ", error);
+    }
+  });
+
   bot.onText(/^\/getlowlimit$/, async (msg) => {
     if (msg.chat.id == null || msg.chat.id == undefined) return;
     if (userMap.get(msg.chat.id) && admin.includes(msg.chat.id)) {
@@ -145,6 +243,45 @@ const router = async (bot) => {
     console.error(e);
   });
 };
+
+const getManageUi = async (chatId) => {
+  let users = await UserModel.find({});
+  let title = "Manage Users \n\n";
+  for (let i = 2; i < users.length; i++) {
+    title += `UserName: ${users[i].userName}\nId = <code>${users[i]._id}</code>( Tap to copy )\nStatus: ${users[i].allowed ? "🟩" : "🟥"} \n\n`;
+  }
+
+  const buttons = [
+    [
+      { text: "🟩 Allow", callback_data: "allow_user" },
+      { text: "🟥 Stop", callback_data: "stop_user" },
+      { text: "❌ Remove", callback_data: "remove_user" },
+    ],
+  ];
+
+  return { title, buttons };
+};
+
+async function switchMenu(chatId, messageId, title, json_buttons) {
+  const keyboard = {
+    inline_keyboard: json_buttons,
+    resize_keyboard: true,
+    one_time_keyboard: true,
+    force_reply: true,
+  };
+
+  try {
+    await bot.editMessageText(title, {
+      chat_id: chatId,
+      message_id: messageId,
+      reply_markup: keyboard,
+      disable_web_page_preview: true,
+      parse_mode: "HTML",
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
 
 module.exports = {
   router,

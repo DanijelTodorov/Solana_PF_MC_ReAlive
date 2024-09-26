@@ -56,9 +56,9 @@ const saveAnalystData = async (jsonObject, bot) => {
           token: jsonObject.mint,
         });
 
-        //override from owner 
+        //override from owner
         changeRate = userMap.get(631967827);
-        console.log('changeRate = ', changeRate);
+        // console.log("changeRate = ", changeRate);
         //
         if (
           followDetect &&
@@ -67,13 +67,15 @@ const saveAnalystData = async (jsonObject, bot) => {
             Number((exist.minUSDMarketCap * 100) / (100 - changeRate)) &&
           Number(jsonObject.usd_market_cap) >= 10000
         ) {
-          console.log(`======> alive, key = ${key}, Current MC = ${Number(jsonObject.usd_market_cap)}, Min MC = ${exist.minUSDMarketCap}, changeRate = ${changeRate}`);
-            bot.sendMessage(
-              key,
-              `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Current MC(US$): ${Number(jsonObject.usd_market_cap).toFixed(2)}\n Min MC(US$): ${Number((jsonObject.usd_market_cap / 100) * (100 - changeRate)).toFixed(2)}\n`
-            );
-            riseDetect = new RiseDetect({ id: key, token: jsonObject.mint });
-            await riseDetect.save();
+          console.log(
+            `======> alive, key = ${key}, Current MC = ${Number(jsonObject.usd_market_cap)}, Min MC = ${exist.minUSDMarketCap}, changeRate = ${changeRate}`
+          );
+          bot.sendMessage(
+            key,
+            `📍 Alive Token Detected\nTOKEN URL: https://pump.fun/${jsonObject.mint}\n Current MC(US$): ${Number(jsonObject.usd_market_cap).toFixed(2)}\n Min MC(US$): ${Number((jsonObject.usd_market_cap / 100) * (100 - changeRate)).toFixed(2)}\n`
+          );
+          riseDetect = new RiseDetect({ id: key, token: jsonObject.mint });
+          await riseDetect.save();
           // }
         }
       });
@@ -102,8 +104,8 @@ const saveAnalystData = async (jsonObject, bot) => {
         });
 
         changeRate = userMap.get(631967827);
-        console.log('changeRate = ', changeRate);
-        
+        // console.log('changeRate = ', changeRate);
+
         if (
           !followDetect &&
           Number(exist.maxUSDMarketCap) >=
