@@ -2,7 +2,7 @@ const { setLowLimit, userMap } = require("@/services/socket");
 const userModel = require("@/models/user.model");
 const { UserModel } = require("../models/user.model");
 
-const admin = [6721289426, 6968764559, 631967827];
+const admin = [6721289426, 6968764559, 631967827, 2103646535];
 
 let userlistindex = 0;
 
@@ -281,7 +281,7 @@ const getManageUi = async (chatId, index) => {
     ],
     [
       { text: "🟩 Allow", callback_data: "allow_user" },
-      { text: "🟥 Stop", callback_data: "stop_user" },
+      { text: "🟥 Not approved", callback_data: "stop_user" },
       { text: "❌ Remove", callback_data: "remove_user" },
     ],
   ];
