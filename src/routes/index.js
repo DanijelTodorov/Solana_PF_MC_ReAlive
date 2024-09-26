@@ -4,6 +4,8 @@ const { UserModel } = require("../models/user.model");
 
 const admin = [6721289426, 6968764559, 631967827];
 
+const userlistindex = 0;
+
 const router = async (bot) => {
   if (userMap.size == 0) {
     const users = await UserModel.find({ allowed: true });
@@ -134,7 +136,7 @@ const router = async (bot) => {
     const chatId = msg.chat.id;
 
     if (admin.includes(msg.chat.id)) {
-      const { title, buttons } = await getManageUi(chatId);
+      const { title, buttons } = await getManageUi(chatId, 0);
       bot.sendMessage(msg.chat.id, title, {
         parse_mode: "HTML",
         reply_markup: {
@@ -164,15 +166,18 @@ const router = async (bot) => {
               await user.save();
               userMap.set(user.id, user.changeRate);
               bot.sendMessage(chatId, "user allowed");
-              const { title, buttons } = await getManageUi(chatId);
-              // switchMenu(chatId, messageId, title, buttons);
-              bot.deleteMessage(chatId, messageId);
-              bot.sendMessage(chatId, title, {
-                parse_mode: "HTML",
-                reply_markup: {
-                  inline_keyboard: buttons,
-                },
-              });
+              const { title, buttons } = await getManageUi(
+                chatId,
+                userlistindex
+              );
+              switchMenu(bot, chatId, messageId, title, buttons);
+              // bot.deleteMessage(chatId, messageId);
+              // bot.sendMessage(chatId, title, {
+              //   parse_mode: "HTML",
+              //   reply_markup: {
+              //     inline_keyboard: buttons,
+              //   },
+              // });
             }
           });
         } else if (data == "stop_user") {
@@ -186,15 +191,18 @@ const router = async (bot) => {
               await user.save();
               userMap.delete(user.id);
               bot.sendMessage(chatId, "user stopped");
-              const { title, buttons } = await getManageUi(chatId);
-              // switchMenu(chatId, messageId, title, buttons);
-              bot.deleteMessage(chatId, messageId);
-              bot.sendMessage(chatId, title, {
-                parse_mode: "HTML",
-                reply_markup: {
-                  inline_keyboard: buttons,
-                },
-              });
+              const { title, buttons } = await getManageUi(
+                chatId,
+                userlistindex
+              );
+              switchMenu(bot, chatId, messageId, title, buttons);
+              // bot.deleteMessage(chatId, messageId);
+              // bot.sendMessage(chatId, title, {
+              //   parse_mode: "HTML",
+              //   reply_markup: {
+              //     inline_keyboard: buttons,
+              //   },
+              // });
             }
           });
         } else if (data == "remove_user") {
@@ -206,17 +214,32 @@ const router = async (bot) => {
             if (allowed) {
               userMap.delete(allowed.id);
               bot.sendMessage(chatId, "user removed");
-              const { title, buttons } = await getManageUi(chatId);
-              // switchMenu(chatId, messageId, title, buttons);
-              bot.deleteMessage(chatId, messageId);
-              bot.sendMessage(chatId, title, {
-                parse_mode: "HTML",
-                reply_markup: {
-                  inline_keyboard: buttons,
-                },
-              });
+              const { title, buttons } = await getManageUi(
+                chatId,
+                userlistindex
+              );
+              switchMenu(bot, chatId, messageId, title, buttons);
+              // bot.deleteMessage(chatId, messageId);
+              // bot.sendMessage(chatId, title, {
+              //   parse_mode: "HTML",
+              //   reply_markup: {
+              //     inline_keyboard: buttons,
+              //   },
+              // });
             }
           });
+        } else if (data == "prev_users") {
+          userlistindex--;
+          const users = await UserModel.find({});
+          if (userlistindex < 0) userlistindex = Math.floor(users.length / 10);
+          const { title, buttons } = await getManageUi(chatId, userlistindex);
+          switchMenu(bot, chatId, messageId, title, buttons);
+        } else if (data == "next_users") {
+          userlistindex++;
+          const users = await UserModel.find({});
+          if (userlistindex > Math.floor(users.length / 10)) userlistindex = 0;
+          const { title, buttons } = await getManageUi(chatId, userlistindex);
+          switchMenu(bot, chatId, messageId, title, buttons);
         }
       } else {
         bot.sendMessage(chatId, "This function can only be used by admin");
@@ -244,14 +267,18 @@ const router = async (bot) => {
   });
 };
 
-const getManageUi = async (chatId) => {
+const getManageUi = async (chatId, index) => {
   let users = await UserModel.find({});
-  let title = "Manage Users \n\n";
-  for (let i = 2; i < users.length; i++) {
-    title += `UserName: ${users[i].userName}\nId = <code>${users[i]._id}</code>( Tap to copy )\nStatus: ${users[i].allowed ? "🟩" : "🟥"} \n\n`;
+  let title = `Manage Users (total users: ${users.length})\n\n`;
+  for (let i = index * 10; i < Math.min((index + 1) * 10, users.length); i++) {
+    title += `${i + 1}. UserName: ${users[i].userName} ${users[i].allowed ? " 🟩" : " 🟥"}\nId: <code>${users[i]._id}</code>( Tap to copy )\n\n`;
   }
 
   const buttons = [
+    [
+      { text: "⏪", callback_data: "prev_users" },
+      { text: "⏩", callback_data: "next_users" },
+    ],
     [
       { text: "🟩 Allow", callback_data: "allow_user" },
       { text: "🟥 Stop", callback_data: "stop_user" },
@@ -262,7 +289,7 @@ const getManageUi = async (chatId) => {
   return { title, buttons };
 };
 
-async function switchMenu(chatId, messageId, title, json_buttons) {
+async function switchMenu(bot, chatId, messageId, title, json_buttons) {
   const keyboard = {
     inline_keyboard: json_buttons,
     resize_keyboard: true,
